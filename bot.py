@@ -12,178 +12,134 @@ from telegram.ext import (
     filters,
 )
 
-# Railway environment variables
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    format="%(asctime)s - %(levelname)s - %(message)s",
     level=logging.INFO,
 )
-logging.getLogger("httpx").setLevel(logging.WARNING)
+
 logger = logging.getLogger(__name__)
 
-WELCOME = (
-    "👋 Welcome to SBR24h_Bot!\n\n"
-    "Learn Forex fundamentals, currency pairs, trading concepts "
-    "and risk management through simple educational lessons.\n\n"
-    "📚 Choose a topic below to start learning.\n\n"
-    "⚠️ Educational content only. Trading involves financial risk."
-)
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-LESSONS = {
-    "learn": (
-        "📚 FOREX BASICS\n\n"
-        "Forex is the market where currencies are exchanged.\n\n"
-        "Learn these key terms:\n"
-        "• Currency pair: two currencies quoted together\n"
-        "• Pip: a common unit of price movement\n"
-        "• Spread: the difference between bid and ask prices\n"
-        "• Leverage: exposure larger than your deposited margin\n\n"
-        "Understanding these concepts is a first step in Forex."
-    ),
-    "trading": (
-        "📈 TRADING BASICS\n\n"
-        "A trade involves buying one currency and selling another.\n\n"
-        "Important concepts:\n"
-        "• Buy and Sell orders\n"
-        "• Entry and exit prices\n"
-        "• Stop Loss and Take Profit\n"
-        "• Trading plans and practice accounts\n\n"
-        "Learn and practise with a demo account before risking money. "
-        "No setup guarantees a profit."
-    ),
-    "pairs": (
-        "💱 CURRENCY PAIRS\n\n"
-        "Examples of major Forex pairs:\n"
-        "• EUR/USD — euro and US dollar\n"
-        "• GBP/USD — pound and US dollar\n"
-        "• USD/JPY — US dollar and Japanese yen\n"
-        "• USD/CHF — US dollar and Swiss franc\n"
-        "• AUD/USD — Australian and US dollars\n\n"
-        "The first currency is the base currency. "
-        "The second is the quote currency."
-    ),
-    "risk": (
-        "🛡️ RISK MANAGEMENT\n\n"
-        "Protecting your capital is an important part of learning.\n\n"
-        "• Understand potential losses before trading\n"
-        "• Learn how position size affects risk\n"
-        "• Understand Stop Loss limitations\n"
-        "• Avoid borrowed money you cannot repay\n"
-        "• Never assume a trade will succeed\n\n"
-        "Forex trading can result in substantial losses."
-    ),
-    "mindset": (
-        "🧠 TRADING PSYCHOLOGY\n\n"
-        "Good habits can help you make more disciplined decisions.\n\n"
-        "• Follow a written learning plan\n"
-        "• Avoid revenge trading\n"
-        "• Recognise fear and greed\n"
-        "• Take breaks when emotional\n"
-        "• Review decisions without chasing losses\n\n"
-        "Discipline cannot remove market risk."
-    ),
-    "faq": (
-        "❓ FREQUENTLY ASKED QUESTIONS\n\n"
-        "What is Forex?\n"
-        "The exchange of one currency for another.\n\n"
-        "What is a demo account?\n"
-        "An account for practising with simulated funds.\n\n"
-        "What is a Stop Loss?\n"
-        "An order intended to close a trade at a specified "
-        "price to limit losses; execution is not guaranteed "
-        "at that exact price.\n\n"
-        "Can Forex guarantee profits?\n"
-        "No. Losses are possible, and profits are never guaranteed."
-    ),
-    "support": (
-        "💬 SUPPORT\n\n"
-        "Send your question about Forex terminology or the "
-        "educational lessons in this bot.\n\n"
-        "This bot provides general educational information, "
-        "not personalised financial advice or guaranteed trading signals."
-    ),
-}
 
+# MAIN MENU: ONLY 4 OPTIONS
 def main_menu():
-    keyboard = [
+    return InlineKeyboardMarkup([
         [
             InlineKeyboardButton("📚 Learn Forex", callback_data="learn"),
-            InlineKeyboardButton("📈 Trading", callback_data="trading"),
+            InlineKeyboardButton("💱 Currency Pairs", callback_data="pairs"),
         ],
         [
-            InlineKeyboardButton("💱 Pairs", callback_data="pairs"),
-            InlineKeyboardButton("🛡️ Risk", callback_data="risk"),
+            InlineKeyboardButton("🛡️ Risk Management", callback_data="risk"),
+            InlineKeyboardButton("❓ Help & FAQ", callback_data="faq"),
         ],
-        [
-            InlineKeyboardButton("🧠 Mindset", callback_data="mindset"),
-            InlineKeyboardButton("❓ FAQ", callback_data="faq"),
-        ],
-        [InlineKeyboardButton("💬 Support", callback_data="support")],
-    ]
-    return InlineKeyboardMarkup(keyboard)
+    ])
 
 
-def back_button():
+def back_menu():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("⬅️ Main Menu", callback_data="menu")]
     ])
 
 
-async def start(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE,
-):
-    message = update.effective_message
-    if message:
-        await message.reply_text(
-            WELCOME,
-            reply_markup=main_menu(),
-        )
+# SHORT EDUCATIONAL RESPONSES
+CONTENT = {
+    "learn": (
+        "📚 <b>Learn Forex</b>\n\n"
+        "Forex is the market where currencies are exchanged.\n\n"
+        "Learn the basics:\n"
+        "• Currency pairs\n"
+        "• Pips and spreads\n"
+        "• Buy and sell orders\n"
+        "• Demo trading\n\n"
+        "⚠️ Trading involves risk."
+    ),
+
+    "pairs": (
+        "💱 <b>Currency Pairs</b>\n\n"
+        "Examples of major Forex pairs:\n"
+        "• EUR/USD — Euro / US Dollar\n"
+        "• GBP/USD — Pound / US Dollar\n"
+        "• USD/JPY — US Dollar / Japanese Yen\n"
+        "• AUD/USD — Australian / US Dollar\n\n"
+        "Currency prices can rise or fall."
+    ),
+
+    "risk": (
+        "🛡️ <b>Risk Management</b>\n\n"
+        "• Learn position sizing.\n"
+        "• Understand stop-loss orders.\n"
+        "• Be careful with leverage.\n"
+        "• Never risk money needed for essentials.\n"
+        "• Practise with a demo account.\n\n"
+        "⚠️ You can lose money trading Forex."
+    ),
+
+    "faq": (
+        "❓ <b>Help & FAQ</b>\n\n"
+        "<b>Is Forex risk-free?</b>\n"
+        "No. Losses are possible.\n\n"
+        "<b>Can beginners learn?</b>\n"
+        "Yes. Start with basic lessons and demo practice.\n\n"
+        "<b>Does this bot give trading signals?</b>\n"
+        "No. It provides educational information only."
+    ),
+}
 
 
-async def show_menu(
+# START
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.effective_message.reply_text(
+        "👋 <b>Welcome to Forex Guide!</b>\n\n"
+        "Learn Forex basics with simple lessons.\n"
+        "Choose an option below to get started.\n\n"
+        "⚠️ Education only. Trading involves risk.",
+        reply_markup=main_menu(),
+        parse_mode="HTML",
+    )
+
+
+# MENU
+async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.effective_message.reply_text(
+        "📋 <b>Forex Guide Menu</b>\nChoose an option:",
+        reply_markup=main_menu(),
+        parse_mode="HTML",
+    )
+
+
+# BUTTONS
+async def button_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
 ):
     query = update.callback_query
     await query.answer()
 
+    if query.data == "menu":
+        await query.edit_message_text(
+            "📋 <b>Forex Guide Menu</b>\nChoose an option:",
+            reply_markup=main_menu(),
+            parse_mode="HTML",
+        )
+        return
+
+    if query.data in CONTENT:
+        await query.edit_message_text(
+            CONTENT[query.data],
+            reply_markup=back_menu(),
+            parse_mode="HTML",
+        )
+        return
+
     await query.edit_message_text(
-        WELCOME,
+        "Please choose an option from the menu.",
         reply_markup=main_menu(),
     )
 
 
-async def handle_button(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE,
-):
-    query = update.callback_query
-    await query.answer()
-
-    topic = query.data
-
-    if topic == "menu":
-        await show_menu(update, context)
-        return
-
-    text = LESSONS.get(topic)
-
-    if text is None:
-        await query.edit_message_text(
-            "Please choose a topic from the main menu.",
-            reply_markup=back_button(),
-        )
-        return
-
-    await query.edit_message_text(
-        text,
-        reply_markup=back_button(),
-    )
-
-
-async def handle_text(
+# SIMPLE TEXT REPLIES
+async def text_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
 ):
@@ -191,67 +147,57 @@ async def handle_text(
     if not message or not message.text:
         return
 
-    question = message.text.lower()
+    text = message.text.lower().strip()
 
-    # Basic educational responses to common questions.
-    if "what is forex" in question or question == "forex":
-        answer = LESSONS["learn"]
-    elif "currency pair" in question or "currency pairs" in question:
-        answer = LESSONS["pairs"]
-    elif "stop loss" in question:
-        answer = (
-            "🛡️ A Stop Loss is an order intended to close "
-            "a trade when the price reaches a specified level. "
-            "It may not execute at that exact price in fast markets.\n\n"
-            "Learn more in the Risk section."
-        )
-    elif "take profit" in question:
-        answer = (
-            "🎯 Take Profit is an order intended to close a trade "
-            "when a specified target price is reached. Execution "
-            "at the exact price is not always guaranteed."
-        )
-    elif "pip" in question:
-        answer = (
-            "📘 A pip is a common unit used to measure price "
-            "movement in a currency pair. Its value depends on "
-            "the pair, trade size and account currency."
-        )
-    elif "risk" in question or "loss" in question:
-        answer = LESSONS["risk"]
-    elif "buy" in question or "sell" in question:
-        answer = LESSONS["trading"]
+    if text in ("hi", "hello", "hey"):
+        reply = "👋 Hello! Choose a Forex topic below."
+    elif "pair" in text or "eur/usd" in text or "gbp/usd" in text:
+        reply = CONTENT["pairs"]
+    elif "risk" in text or "stop loss" in text:
+        reply = CONTENT["risk"]
+    elif "help" in text or "faq" in text:
+        reply = CONTENT["faq"]
+    elif "forex" in text or "trading" in text:
+        reply = CONTENT["learn"]
     else:
-        answer = (
-            "📚 I can help with basic Forex education.\n\n"
-            "Choose a topic below, or ask about Forex basics, "
-            "currency pairs, pips, Stop Loss or Take Profit.\n\n"
-            "I do not provide guaranteed signals or promise profits."
+        reply = (
+            "Thanks for your message!\n\n"
+            "Please choose a menu option to explore Forex basics."
         )
 
     await message.reply_text(
-        answer,
+        reply,
         reply_markup=main_menu(),
+        parse_mode="HTML",
     )
 
 
+# ERROR LOGGING
+async def error_handler(
+    update: object,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+    logger.error("Bot error: %s", context.error)
+
+
+# START BOT
 def main():
     if not BOT_TOKEN:
-        raise ValueError(
-            "BOT_TOKEN environment variable is missing. "
-            "Add BOT_TOKEN in Railway Variables."
+        raise RuntimeError(
+            "BOT_TOKEN is missing. Add it in Railway Variables."
         )
 
     app = Application.builder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("menu", start))
-    app.add_handler(CallbackQueryHandler(handle_button))
+    app.add_handler(CommandHandler("menu", menu))
+    app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(
-        MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text)
+        MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler)
     )
+    app.add_error_handler(error_handler)
 
-    logger.info("SBR24h_Bot is starting...")
+    logger.info("Forex Guide bot is starting...")
     app.run_polling()
 
 
